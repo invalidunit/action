@@ -1,0 +1,22 @@
+#!/bin/sh -
+
+
+export LANG=en_US.UTF-8
+
+while [ '1' -le '2' ]; do
+	_list="$(curl -s -L -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs" | jq ".workflow_runs[].id" | sed '1d')"
+	if echo "${_list}" | wc -l | grep -q '^1$'; then
+		echo 'All done, have fun!'
+		exit 0
+	fi
+	i='1'
+	i_max="$(echo "${_list}" | wc -l)"
+	while [ "${i}" -le "${i_max}" ]; do
+		_id="$(echo "${_list}" | sed -n "${i}p")"
+		echo "now process: \"${_id}\""
+		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}"
+		unset _id
+		i="$((i+1))"
+	done
+	unset i i_max
+done
