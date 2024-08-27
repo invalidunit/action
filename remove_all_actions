@@ -6,8 +6,10 @@ export LANG=en_US.UTF-8
 while [ '1' -le '2' ]; do
 	_list="$(curl -s -L -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs" | jq ".workflow_runs[].id" | sed '1d')"
 	if echo "${_list}" | wc -l | grep -q '^1$'; then
-		echo 'All done, have fun!'
-		exit 0
+		if [ "${_list}" = '' ]; then
+			echo 'All done, have fun!'
+			exit 0
+		fi
 	fi
 	i='1'
 	i_max="$(echo "${_list}" | wc -l)"
