@@ -27,7 +27,7 @@ while [ '1' -le '2' ]; do
 			exit 0
 		fi
 		echo "now process: \"${_id}\""
-		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}"
+		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}" | jq -c
 		_id1="${_id}"
 		unset _id
 		i="$((i+1))"
