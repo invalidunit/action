@@ -2,21 +2,33 @@
 
 
 export LANG=en_US.UTF-8
+_repeat='1'
 
 while [ '1' -le '2' ]; do
 	_list="$(curl -s -L -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs" | jq ".workflow_runs[].id" | sed '1d')"
 	if echo "${_list}" | wc -l | grep -q '^1$'; then
 		if [ "${_list}" = '' ]; then
-			echo 'All done, have fun!'
+			echo '[*] All done, have fun!'
 			exit 0
 		fi
 	fi
 	i='1'
 	i_max="$(echo "${_list}" | wc -l)"
 	while [ "${i}" -le "${i_max}" ]; do
-		_id="$(echo "${_list}" | sed -n "${i}p")"
+		_id="$(echo "${_list}" | shuf -n 1)"
+		if [ "${_id1}" = "${_id}" ]; then
+			sleep 1
+			_repeat="$((_repeat+1))"
+		else
+			_repeat='1'
+		fi
+		if [ "${_repeat}" = '10' ]; then
+			echo '[*] Repetition limit reached. Maybe there are other actions running?'
+			exit 0
+		fi
 		echo "now process: \"${_id}\""
 		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}"
+		_id1="${_id}"
 		unset _id
 		i="$((i+1))"
 	done
