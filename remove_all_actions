@@ -26,7 +26,7 @@ while [ '1' -le '2' ]; do
 			echo '[*] Repetition limit reached. Maybe there are other actions running?'
 			exit 0
 		fi
-		echo "now process: \"${_id}\""
+		echo "now remove process: \"${_id}\""
 		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}" | jq -c
 		_id1="${_id}"
 		unset _id
