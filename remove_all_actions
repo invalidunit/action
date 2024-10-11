@@ -2,6 +2,7 @@
 
 
 export LANG=en_US.UTF-8
+_version='0.1.1'
 _repeat='1'
 
 while [ '1' -le '2' ]; do
@@ -17,7 +18,6 @@ while [ '1' -le '2' ]; do
 	while [ "${i}" -le "${i_max}" ]; do
 		_id="$(echo "${_list}" | shuf -n 1)"
 		if [ "${_id1}" = "${_id}" ]; then
-			sleep 1
 			_repeat="$((_repeat+1))"
 		else
 			_repeat='1'
@@ -29,6 +29,10 @@ while [ '1' -le '2' ]; do
 		echo "now remove process: \"${_id}\""
 		curl -s -L -X DELETE -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs/${_id}" | jq -c
 		_id1="${_id}"
+		_list="$(echo "${_list}" | sed "/${_id}/d")"
+		echo '==========================================='
+		echo "remove \"${_id}\" in list"
+		echo "${_list}"
 		unset _id
 		i="$((i+1))"
 	done
