@@ -1,0 +1,146 @@
+#!/bin/sh -
+
+
+export LANG=en_US.UTF-8
+readonly _command="${0##*/}"
+readonly _version='0.1.0'
+
+
+if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
+	sw_vers(){
+		echo '14.3'
+	}
+	uname(){
+		case "${1}" in
+			-m)
+				echo 'iPhone9,3'
+				;;
+			-r)
+				echo '20.2.0'
+				;;
+		esac
+	}
+fi
+
+_randnum(){
+	if [ -z "${2}" ]; then
+		tr -dc 'A-Za-z0-9' < /dev/urandom 2>>/dev/null | head -c "${1}"
+	else
+		tr -dc "${1}" < /dev/urandom 2>>/dev/null | head -c "${2}"
+	fi
+}
+
+_curl(){
+	case "${1}" in
+		-c)
+			curl --write-out '%{http_code}' --silent --output /dev/null -L "${2}" -H "Host: ${3}" -H 'Sec-CH-UA: Sileo;v=2.5;t=client,unknow;t=jailbreak,procursus;t=distribution' -H "Sec-CH-UA-Model: $(uname -m)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: 0000$(_randnum '0-9' '4')-$(_randnum '0-9' '15')E" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H "Sec-CH-UA-Platform-Version: $(sw_vers -productVersion)" --compressed
+			;;
+		-p)
+			curl -s -L "${2}" -H "Host: ${3}" -H 'Sec-CH-UA: Sileo;v=2.5;t=client,unknow;t=jailbreak,procursus;t=distribution' -H "Sec-CH-UA-Model: $(uname -m)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: 0000$(_randnum '0-9' '4')-$(_randnum '0-9' '15')E" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H "Sec-CH-UA-Platform-Version: $(sw_vers -productVersion)" --compressed
+			;;
+		-f)
+			curl -s -L "${2}" -H "Host: ${3}" -H 'Connection: keep-alive' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: $(_randnum 'a-f0-9' '40')" -H 'Accept-Encoding: gzip, deflate, br' --compressed
+			;;
+		*)
+			echo 'unknown'
+			;;
+	esac
+}
+
+_parse_package(){
+	awk '
+BEGIN {
+    FS=": ";
+    OFS=",";
+}
+{
+    sub(/\r$/, "");
+    if ($1 == "Package") package = $2;
+    if ($1 == "Version") version = $2;
+    if ($1 == "Architecture") arch = $2;
+    if ($1 == "SHA256") sha256 = $2;
+    if ($1 == "Filename") filename = $2;
+    if ($1 == "Tag") tag = $2;
+}
+/^$/ {
+    print package, version, arch, sha256, filename, tag;
+    package = version = arch = sha256 = filename = tag = "";
+}
+END {
+    if (package != "" || version != "" || arch != "" || sha256 != "" || filename != "" || tag != "") {
+        print package, version, arch, sha256, filename, tag;
+    }
+}' "${1}" >"${2}"
+}
+
+_tmp_p="/tmp/$(_randnum '20')"
+while [ '1' -le '2' ]; do
+	if [ -e "${_tmp_p}" ]; then
+		_tmp_p="/tmp/$(_randnum '20')"
+	else
+		break
+	fi
+done
+mkdir -p "${_tmp_p}"
+_host="${1##*://}"
+_host="${_host%%/*}"
+_url="$(echo "${1}" | sed 's#\/$##')"
+echo '[*] now try to download "Packages"...'
+if _curl -c "${_url}/Packages.zst" "${_host}" | grep -q '200'; then
+	echo '[*] find "Packages.zst" file'
+	_curl -p "${_url}/Packages.zst" "${_host}" 1>"${_tmp_p}/Packages.zst"
+	zstd -d "${_tmp_p}/Packages.zst"
+	rm -f "${_tmp_p}/Packages.zst"
+elif _curl -c "${_url}/Packages.xz" "${_host}" | grep -q '200'; then
+	echo '[*] find "Packages.xz" file'
+	_curl -p "${_url}/Packages.xz" "${_host}" 1>"${_tmp_p}/Packages.xz"
+	xz -d "${_tmp_p}/Packages.xz"
+	rm -f "${_tmp_p}/Packages.xz"
+elif _curl -c "${_url}/Packages.bz2" "${_host}" | grep -q '200'; then
+	echo '[*] find "Packages.bz2" file'
+	_curl -p "${_url}/Packages.bz2" "${_host}" 1>"${_tmp_p}/Packages.bz2"
+	bzip2 -d "${_tmp_p}/Packages.bz2"
+	rm -f "${_tmp_p}/Packages.bz2"
+elif _curl -c "${_url}/Packages.gz" "${_host}" | grep -q '200'; then
+	echo '[*] find "Packages.gz" file'
+	_curl -p "${_url}/Packages.gz" "${_host}" 1>"${_tmp_p}/Packages.gz"
+	gzip -d "${_tmp_p}/Packages.gz"
+	rm -f "${_tmp_p}/Packages.gz"
+elif _curl -c "${_url}/Packages" "${_host}" | grep -q '200'; then
+	echo '[*] find "Packages" file'
+	_curl -p "${_url}/Packages" "${_host}" 1>"${_tmp_p}/Packages"
+else
+	echo '[*] Not found any "Package" file'
+fi
+if [ -f "${_tmp_p}/Packages" ]; then
+	echo '[*] Parsing "Packages" files...'
+	_parse_package "${_tmp_p}/Packages" "${_tmp_p}/Packages.csv"
+	cat "${_tmp_p}/Packages.csv" | grep -v 'cydia::commercial' >"${_tmp_p}/Packages_no_commercial.csv"
+	awk '{print $1, $2, $3, $4, $5}' "${_tmp_p}/Packages_no_commercial.csv" >"${_tmp_p}/Packages.csv"
+	dpkg-scanpackages -m "./debs" /dev/null >>"${_tmp_p}/Packages.cache"
+	cat "${_tmp_p}/Packages" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.list"
+	cat "${_tmp_p}/Packages.cache" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.cache"
+	diff -u "${_tmp_p}/Packages_sha256.list" "${_tmp_p}/Packages_sha256.cache" | grep "^-" | sed 's/^-//' | sed '/Packages_sha256/d' >"${_tmp_p}/Packages.diff"
+	rm -rf "${_tmp_p}/Packages_no_commercial.csv" "${_tmp_p}/Packages_sha256.list" "${_tmp_p}/Packages_sha256.cache"
+	i='1'
+	i_max="$(cat "${_tmp_p}/Packages.diff" | wc -l)"
+	if [ "${i_max}" = '0' ]; then
+		echo 'not found'
+		exit 0
+	fi
+	while [ "${i}" -le "${i_max}" ]; do
+		_sha256="$(cat "${_tmp_p}/Packages.diff" | sed -n "${i}p")"
+		echo "${i}/${i_max} - now download: ${_sha256}"
+		_curl -f "${_url}/$(awk -v sha256="${_sha256}" -F ',' '$4==sha256 {print $5}' "${_tmp_p}/Packages.csv")" "${_host}" >"${_tmp_p}/${_sha256}.deb"
+		i="$((i+1))"
+	done
+	mkdir -p './debs'
+	i='1'
+	i_max="$(ls "${_tmp_p}" | grep '.deb$' | wc -l)"
+	_list="$(ls "${_tmp_p}" | grep '.deb$')"
+	while [ "${i}" -le "${i_max}" ]; do
+		_file="$(echo "${_list}" | sed -n "${i}p")"
+		mv -v "${_tmp_p}/${_file}" "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
+		i="$((i+1))"
+	done
+fi
