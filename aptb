@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.4'
+readonly _version='0.1.5'
 
 
 if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
@@ -120,7 +120,8 @@ if [ -f "${_tmp_p}/Packages" ]; then
 	dpkg-scanpackages -m "./debs" /dev/null >"${_tmp_p}/Packages.cache"
 	cat "${_tmp_p}/Packages" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.list"
 	cat "${_tmp_p}/Packages.cache" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.cache"
-	touch "${_tmp_p}/Packages_sha256.cache" "${_tmp_p}/Packages_sha256.list"
+	echo '' >>"${_tmp_p}/Packages_sha256.cache"
+	echo '' >>"${_tmp_p}/Packages_sha256.list"
 	awk 'NR==FNR { lines[$0]++; next } !($0 in lines)' "${_tmp_p}/Packages_sha256.cache" "${_tmp_p}/Packages_sha256.list" >"${_tmp_p}/Packages.diff"
 	rm -rf "${_tmp_p}/Packages_no_commercial.csv" "${_tmp_p}/Packages_sha256.list" "${_tmp_p}/Packages_sha256.cache"
 	i='1'
