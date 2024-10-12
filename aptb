@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.0'
+readonly _version='0.1.1'
 
 
 if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
@@ -134,13 +134,13 @@ if [ -f "${_tmp_p}/Packages" ]; then
 		_curl -f "${_url}/$(awk -v sha256="${_sha256}" -F ',' '$4==sha256 {print $5}' "${_tmp_p}/Packages.csv")" "${_host}" >"${_tmp_p}/${_sha256}.deb"
 		i="$((i+1))"
 	done
-	mkdir -p './debs'
 	i='1'
 	i_max="$(ls "${_tmp_p}" | grep '.deb$' | wc -l)"
 	_list="$(ls "${_tmp_p}" | grep '.deb$')"
 	while [ "${i}" -le "${i_max}" ]; do
 		_file="$(echo "${_list}" | sed -n "${i}p")"
-		mv -v "${_tmp_p}/${_file}" "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
+		mkdir -p "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/"
+		mv -v "${_tmp_p}/${_file}" "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/$(dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
 		i="$((i+1))"
 	done
 fi
