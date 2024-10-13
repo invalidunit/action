@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.6-1'
+readonly _version='0.1.7'
 
 
 if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
@@ -38,19 +38,7 @@ _random_sleep(){
 			;;
 	esac
 	echo "now sleep \"${_sleep_s}s\"..."
-	echo -n "${_sleep_s}"
-	while [ "2" -le "${_sleep_s}" ]; do
-		sleep 0.2
-		echo -n "."
-		sleep 0.2
-		echo -n "."
-		sleep 0.2
-		echo -n "."
-		sleep 0.4
-		_sleep_s="$((_sleep_s-1))"
-		echo -n "${_sleep_s}"
-	done
-	echo '...now wake up !'
+	sleep "${_sleep_s}"
 }
 
 _curl(){
