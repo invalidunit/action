@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.8'
+readonly _version='0.1.9'
 
 
 if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
@@ -50,7 +50,7 @@ _curl(){
 			curl -s -L "${2}" -H "Host: ${3}" -H 'Sec-CH-UA: Sileo;v=2.5;t=client,unknow;t=jailbreak,procursus;t=distribution' -H "Sec-CH-UA-Model: $(uname -m)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: 0000$(_randnum '0-9' '4')-$(_randnum '0-9' '15')E" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H "Sec-CH-UA-Platform-Version: $(sw_vers -productVersion)" --compressed
 			;;
 		-f)
-			curl -s -L "${2}" -H "Host: ${3}" -H 'Connection: keep-alive' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: $(_randnum 'a-f0-9' '40')" -H 'Accept-Encoding: gzip, deflate, br' --compressed
+			curl -L "${2}" -H "Host: ${3}" -H 'Connection: keep-alive' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: $(_randnum 'a-f0-9' '40')" -H 'Accept-Encoding: gzip, deflate, br' --compressed
 			;;
 		*)
 			echo 'unknown'
@@ -155,8 +155,10 @@ if [ -f "${_tmp_p}/Packages" ]; then
 	_list="$(ls "${_tmp_p}" | grep '.deb$')"
 	while [ "${i}" -le "${i_max}" ]; do
 		_file="$(echo "${_list}" | sed -n "${i}p")"
-		mkdir -p "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/"
-		mv -v "${_tmp_p}/${_file}" "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/$(dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
+		if dpkg-deb -I "${_tmp_p}/${_file}" 2>>/dev/null 1>>/dev/null; then
+			mkdir -p "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/"
+			mv -v "${_tmp_p}/${_file}" "./debs/$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/$(dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
+		fi
 		i="$((i+1))"
 	done
 fi
