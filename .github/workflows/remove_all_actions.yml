@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  triage:
+  remove_all_actions:
     runs-on: ubuntu-latest
     steps:
 
