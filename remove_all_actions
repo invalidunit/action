@@ -2,8 +2,9 @@
 
 
 export LANG=en_US.UTF-8
-_version='0.1.2-1'
+_version='0.1.2-2'
 _repeat='1'
+echo "version: ${_version}"
 
 while [ '1' -le '2' ]; do
 	_list="$(curl -s -L -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GH_REPO}/actions/runs" | jq ".workflow_runs[].id" | sed '1d')"
