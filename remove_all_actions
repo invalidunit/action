@@ -2,7 +2,7 @@
 
 
 export LANG=en_US.UTF-8
-_version='0.1.5'
+_version='0.1.5-1'
 _repeat='1'
 echo "version: ${_version}"
 
@@ -20,7 +20,7 @@ while [ '1' -le '2' ]; do
 			fi
 			;;
 	esac
-	if [ "${_repeat}" -le '100' ]; then
+	if [ ! "${_repeat}" -le '100' ]; then
 		echo '[*] Early Exit'
 		exit 0
 	fi
