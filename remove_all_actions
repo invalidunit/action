@@ -2,7 +2,7 @@
 
 
 export LANG=en_US.UTF-8
-_version='0.1.2'
+_version='0.1.2-1'
 _repeat='1'
 
 while [ '1' -le '2' ]; do
@@ -15,6 +15,7 @@ while [ '1' -le '2' ]; do
 	fi
 	i='1'
 	i_max="$(echo "${_list}" | wc -l)"
+	touch '/tmp/do.list'
 	while [ "${i}" -le "${i_max}" ]; do
 		_id="$(echo "${_list}" | shuf -n 1)"
 		if ! grep -q "${_id}" '/tmp/do.list'; then
