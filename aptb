@@ -5,7 +5,6 @@ export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
 readonly _version='0.1.9-1'
 echo "version: ${_version}"
-echo "incoming: ${1}"
 
 
 if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
