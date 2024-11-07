@@ -2,6 +2,10 @@ name: aptb
 
 on:
   workflow_call:
+    inputs:
+      _repo: 
+        required: true
+        type: string
 
 jobs:
   aptb:
