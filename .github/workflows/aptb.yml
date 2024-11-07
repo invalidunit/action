@@ -28,7 +28,7 @@ jobs:
           
       - name: Find updates and download them
         run: |
-          aptb "${_repo}"
+          aptb ${{ inputs._repo }}
 
       - name: Refresh Packages
         if: success()
