@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.9-1'
+readonly _version='0.1.9-2'
 echo "version: ${_version}"
 
 
@@ -129,6 +129,7 @@ if [ -f "${_tmp_p}/Packages" ]; then
 	_parse_package "${_tmp_p}/Packages" "${_tmp_p}/Packages.csv"
 	cat "${_tmp_p}/Packages.csv" | grep -v 'cydia::commercial' >"${_tmp_p}/Packages_no_commercial.csv"
 	awk '{print $1, $2, $3, $4, $5}' "${_tmp_p}/Packages_no_commercial.csv" >"${_tmp_p}/Packages.csv"
+	mkdir -p "./debs"
 	dpkg-scanpackages -m "./debs" /dev/null >"${_tmp_p}/Packages.cache"
 	cat "${_tmp_p}/Packages" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.list"
 	cat "${_tmp_p}/Packages.cache" | grep '^SHA256: ' | sed 's#^SHA256: ##' >"${_tmp_p}/Packages_sha256.cache"
