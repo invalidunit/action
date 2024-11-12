@@ -6,6 +6,9 @@ on:
       _repo: 
         required: true
         type: string
+      _sleep: 
+        required: true
+        type: number
 
 jobs:
   aptb:
@@ -28,6 +31,9 @@ jobs:
           
       - name: Find updates and download them
         run: |
+          if [ ! "${_sleep}" = '0' ]; then
+            touch '/tmp/.no_sleep'
+          fi
           aptb "${{ inputs._repo }}"
 
       - name: Refresh Packages
