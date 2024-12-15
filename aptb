@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.1.9-2'
+readonly _version='0.2.0'
 echo "version: ${_version}"
 
 
@@ -14,13 +14,31 @@ if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
 	uname(){
 		case "${1}" in
 			-m)
-				echo 'iPhone14,3'
+				echo 'iPhone14,5'
 				;;
 			-r)
 				echo '23.0.0'
 				;;
 		esac
 	}
+fi
+
+readonly _uname_m="$(uname -m)"
+readonly _uname_r="$(uname -r)"
+readonly _system_version="$(sw_vers -productVersion)"
+if dpkg -s org.coolstar.sileo 2>>/dev/null 1>>/dev/null; then
+	readonly _sileo_version="$(dpkg -s org.coolstar.sileo | grep '^Version: ' | awk -F ' ' '{print $2}')"
+else
+	readonly _sileo_version='2.5.1'
+fi
+if which plutil 2>>/dev/null 1>>/dev/null; then
+	if ! plutil -key 'CFBundleVersion' "$( [ -e '/rootfs' ] && echo '/rootfs')/System/Library/Frameworks/CoreFoundation.framework/Info.plist" | grep -q '^Error: ' 2>>/dev/null 1>>/dev/null; then
+		readonly _core_foundation_version="$(plutil -key 'CFBundleVersion' "$( [ -e '/rootfs' ] && echo '/rootfs')/System/Library/Frameworks/CoreFoundation.framework/Info.plist")"
+	else
+		readonly _core_foundation_version='2048.100'
+	fi
+else
+	readonly _core_foundation_version='2048.100'
 fi
 
 _randnum(){
@@ -30,6 +48,8 @@ _randnum(){
 		tr -dc "${1}" < /dev/urandom 2>>/dev/null | head -c "${2}"
 	fi
 }
+
+readonly _x_id="0000$(_randnum '0-9' '4')-000$(_randnum '0-9' '12')E"
 
 _random_sleep(){
 	_sleep_s="$(_randnum '0-9' '2')"
@@ -45,13 +65,10 @@ _random_sleep(){
 _curl(){
 	case "${1}" in
 		-c)
-			curl --write-out '%{http_code}' --silent --output /dev/null -L "${2}" -H "Host: ${3}" -H 'Sec-CH-UA: Sileo;v=2.5;t=client,unknow;t=jailbreak,procursus;t=distribution' -H "Sec-CH-UA-Model: $(uname -m)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: 0000$(_randnum '0-9' '4')-$(_randnum '0-9' '15')E" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H "Sec-CH-UA-Platform-Version: $(sw_vers -productVersion)" --compressed
+			curl --write-out '%{http_code}' --silent --output /dev/null -L "${2}" -H "Host: ${3}" -H "Sec-CH-UA: Sileo;v=${_sileo_version};t=client,unknow;t=jailbreak,procursus;t=distribution" -H "Sec-CH-UA-Model: ${_uname_m}" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: ${_x_id}" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/${_sileo_version} CoreFoundation/${_core_foundation_version} Darwin/${_uname_r}" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: ${_uname_m}" -H "X-Firmware: ${_system_version}" -H "Sec-CH-UA-Platform-Version: ${_system_version}" -H 'Sec-CH-UA-Bitness: 64' --compressed
 			;;
-		-p)
-			curl -s -L "${2}" -H "Host: ${3}" -H 'Sec-CH-UA: Sileo;v=2.5;t=client,unknow;t=jailbreak,procursus;t=distribution' -H "Sec-CH-UA-Model: $(uname -m)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: 0000$(_randnum '0-9' '4')-$(_randnum '0-9' '15')E" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H "Sec-CH-UA-Platform-Version: $(sw_vers -productVersion)" --compressed
-			;;
-		-f)
-			curl -s -L "${2}" -H "Host: ${3}" -H 'Connection: keep-alive' -H "X-Machine: $(uname -m)" -H "X-Firmware: $(sw_vers -productVersion)" -H 'Accept: */*' -H "User-Agent: Sileo/2.5 CoreFoundation/1858.112 Darwin/$(uname -r)" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: $(_randnum 'a-f0-9' '40')" -H 'Accept-Encoding: gzip, deflate, br' --compressed
+		-p|-f)
+			curl -s -L "${2}" -H "Host: ${3}" -H "Sec-CH-UA: Sileo;v=${_sileo_version};t=client,unknow;t=jailbreak,procursus;t=distribution" -H "Sec-CH-UA-Model: ${_uname_m}" -H 'Accept-Language: zh-CN,zh-Hans;q=0.9' -H "X-Unique-ID: ${_x_id}" -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept: */*' -H "User-Agent: Sileo/${_sileo_version} CoreFoundation/${_core_foundation_version} Darwin/${_uname_r}" -H 'Connection: keep-alive' -H 'Sec-CH-UA-Platform: iphoneos' -H "X-Machine: ${_uname_m}" -H "X-Firmware: ${_system_version}" -H "Sec-CH-UA-Platform-Version: ${_system_version}" -H 'Sec-CH-UA-Bitness: 64' --compressed -o "${4}"
 			;;
 		*)
 			echo 'unknown'
@@ -100,27 +117,27 @@ _url="$(echo "${1}" | sed 's#\/$##')"
 echo '[*] now try to download "Packages"...'
 if _curl -c "${_url}/Packages.zst" "${_host}" | grep -q '200'; then
 	echo '[*] find "Packages.zst" file'
-	_curl -p "${_url}/Packages.zst" "${_host}" 1>"${_tmp_p}/Packages.zst"
+	_curl -p "${_url}/Packages.zst" "${_host}" "${_tmp_p}/Packages.zst"
 	zstd -d "${_tmp_p}/Packages.zst"
 	rm -f "${_tmp_p}/Packages.zst"
 elif _curl -c "${_url}/Packages.xz" "${_host}" | grep -q '200'; then
 	echo '[*] find "Packages.xz" file'
-	_curl -p "${_url}/Packages.xz" "${_host}" 1>"${_tmp_p}/Packages.xz"
+	_curl -p "${_url}/Packages.xz" "${_host}" "${_tmp_p}/Packages.xz"
 	xz -d "${_tmp_p}/Packages.xz"
 	rm -f "${_tmp_p}/Packages.xz"
 elif _curl -c "${_url}/Packages.bz2" "${_host}" | grep -q '200'; then
 	echo '[*] find "Packages.bz2" file'
-	_curl -p "${_url}/Packages.bz2" "${_host}" 1>"${_tmp_p}/Packages.bz2"
+	_curl -p "${_url}/Packages.bz2" "${_host}" "${_tmp_p}/Packages.bz2"
 	bzip2 -d "${_tmp_p}/Packages.bz2"
 	rm -f "${_tmp_p}/Packages.bz2"
 elif _curl -c "${_url}/Packages.gz" "${_host}" | grep -q '200'; then
 	echo '[*] find "Packages.gz" file'
-	_curl -p "${_url}/Packages.gz" "${_host}" 1>"${_tmp_p}/Packages.gz"
+	_curl -p "${_url}/Packages.gz" "${_host}" "${_tmp_p}/Packages.gz"
 	gzip -d "${_tmp_p}/Packages.gz"
 	rm -f "${_tmp_p}/Packages.gz"
 elif _curl -c "${_url}/Packages" "${_host}" | grep -q '200'; then
 	echo '[*] find "Packages" file'
-	_curl -p "${_url}/Packages" "${_host}" 1>"${_tmp_p}/Packages"
+	_curl -p "${_url}/Packages" "${_host}" "${_tmp_p}/Packages"
 else
 	echo '[*] Not found any "Package" file'
 fi
@@ -149,7 +166,7 @@ if [ -f "${_tmp_p}/Packages" ]; then
 		fi
 		_sha256="$(cat "${_tmp_p}/Packages.diff" | sed -n "${i}p")"
 		echo "${i}/${i_max} - now download: ${_sha256}"
-		_curl -f "${_url}/$(awk -v sha256="${_sha256}" -F ',' '$4==sha256 {print $5}' "${_tmp_p}/Packages.csv")" "${_host}" >"${_tmp_p}/${_sha256}.deb"
+		_curl -f "${_url}/$(awk -v sha256="${_sha256}" -F ',' '$4==sha256 {print $5}' "${_tmp_p}/Packages.csv")" "${_host}" "${_tmp_p}/${_sha256}.deb"
 		i="$((i+1))"
 	done
 	i='1'
