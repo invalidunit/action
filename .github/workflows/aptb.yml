@@ -31,7 +31,7 @@ jobs:
           
       - name: Find updates and download them
         run: |
-          if [ ! "${_sleep}" = '0' ]; then
+          if [ "${_sleep}" = '0' ]; then
             touch '/tmp/.no_sleep'
           fi
           aptb "${{ inputs._repo }}"
