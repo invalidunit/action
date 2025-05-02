@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.2.1-3'
+readonly _version='0.2.2'
 echo "version: ${_version}"
 
 
@@ -176,7 +176,7 @@ if [ -f "${_tmp_p}/Packages" ]; then
 		_file="$(echo "${_list}" | sed -n "${i}p")"
 		if sudo dpkg-deb -I "${_tmp_p}/${_file}" 2>>/dev/null 1>>/dev/null; then
 			mkdir -p "./debs/$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/"
-			mv -v "${_tmp_p}/${_file}" "./debs/$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_${_file}"
+			mv -v "${_tmp_p}/${_file}" "./debs/$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Architecture)/$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Package)_$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Version)_$(sudo dpkg-deb -f "${_tmp_p}/${_file}" Architecture)_$(date +%Y%m%d-%H%M)_${_file}"
 		fi
 		i="$((i+1))"
 	done
