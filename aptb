@@ -3,7 +3,7 @@
 
 export LANG=en_US.UTF-8
 readonly _command="${0##*/}"
-readonly _version='0.2.3'
+readonly _version='0.2.4'
 echo "version: ${_version}"
 
 
@@ -14,10 +14,10 @@ if ! which sw_vers 2>>/dev/null 1>>/dev/null; then
 	uname(){
 		case "${1}" in
 			-m)
-				echo 'iPhone14,5'
+				echo 'iPhone18,2'
 				;;
 			-r)
-				echo '23.0.0'
+				echo '25.5.0'
 				;;
 		esac
 	}
@@ -35,10 +35,10 @@ if which plutil 2>>/dev/null 1>>/dev/null; then
 	if ! plutil -key 'CFBundleVersion' "$( [ -e '/rootfs' ] && echo '/rootfs')/System/Library/Frameworks/CoreFoundation.framework/Info.plist" | grep -q '^Error: ' 2>>/dev/null 1>>/dev/null; then
 		readonly _core_foundation_version="$(plutil -key 'CFBundleVersion' "$( [ -e '/rootfs' ] && echo '/rootfs')/System/Library/Frameworks/CoreFoundation.framework/Info.plist")"
 	else
-		readonly _core_foundation_version='2048.100'
+		readonly _core_foundation_version='5026.5.4'
 	fi
 else
-	readonly _core_foundation_version='2048.100'
+	readonly _core_foundation_version='5026.5.4'
 fi
 
 _randnum(){
@@ -103,7 +103,7 @@ END {
 }
 
 _tmp_p="/tmp/$(_randnum '20')"
-while [ '1' -le '2' ]; do
+while :; do
 	if [ -e "${_tmp_p}" ]; then
 		_tmp_p="/tmp/$(_randnum '20')"
 	else
@@ -160,10 +160,9 @@ if [ -f "${_tmp_p}/Packages" ]; then
 		echo 'not found'
 		exit 0
 	fi
+	[ -f '/tmp/.limit' ] && i_max="$(cat '/tmp/.limit' | sed -n '1p')"
 	while [ "${i}" -le "${i_max}" ]; do
-		if [ ! -f '/tmp/.no_sleep' ]; then
-			_random_sleep
-		fi
+		[ -f '/tmp/.no_sleep' ] || _random_sleep
 		_sha256="$(cat "${_tmp_p}/Packages.diff" | sed -n "${i}p")"
 		echo "${i}/${i_max} - now download: ${_sha256}"
 		_curl -f "${_url}/$(awk -v sha256="${_sha256}" -F ',' '$4==sha256 {print $5}' "${_tmp_p}/Packages.csv")" "${_host}" "${_tmp_p}/${_sha256}.deb"
