@@ -9,6 +9,9 @@ on:
       _sleep: 
         required: true
         type: number
+      _limit: 
+        required: true
+        type: number
 
 jobs:
   aptb:
@@ -31,9 +34,8 @@ jobs:
           
       - name: Find updates and download them
         run: |
-          if [ "${{ inputs._sleep }}" = '0' ]; then
-            touch '/tmp/.no_sleep'
-          fi
+          [ "${{ inputs._sleep }}" = '0' ] && touch '/tmp/.no_sleep'
+          [ "${{ inputs._limit }}" = '0' ] || echo "${{ inputs._limit }}" >/tmp/.limit
           aptb "${{ inputs._repo }}"
 
       - name: Refresh Packages
